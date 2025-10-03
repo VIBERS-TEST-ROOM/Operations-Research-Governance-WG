@@ -1,0 +1,30 @@
+name: ORG WG Discord Notifications
+
+on:
+  push:
+    branches:
+      - main   # notify when changes land in main
+  pull_request:
+    types: [opened, reopened, closed, ready_for_review]
+  issues:
+    types: [opened, reopened, closed, labeled]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send notification to Discord
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_USERNAME: "ORG WG GitHub Bot"
+          DISCORD_AVATAR: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+          DISCORD_CONTENT: |
+            🏛️ **Operations & Governance WG Update**
+            📂 Repo: ${{ github.repository }}
+            👤 By: ${{ github.actor }}
+            📌 Event: ${{ github.event_name }}
+
+            ${{ github.event.pull_request.title || github.event.issue.title || github.event.head_commit.message }}
+
+            🔗 [View on GitHub](${{ github.event.pull_request.html_url || github.event.issue.html_url || github.event.head_commit.url }})
