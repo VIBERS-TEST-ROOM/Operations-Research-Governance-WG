@@ -1,30 +1,43 @@
-name: ORG WG Discord Notifications
+name: ORG WG Notifications
 
 on:
-  push:
-    branches:
-      - main   # notify when changes land in main
-  pull_request:
-    types: [opened, reopened, closed, ready_for_review]
   issues:
-    types: [opened, reopened, closed, labeled]
+    types: [opened, edited, closed]
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, closed]
 
 jobs:
-  notify:
+  discord:
     runs-on: ubuntu-latest
     steps:
-      - name: Send notification to Discord
+      - name: Send Discord notification
         uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            {% if github.event_name == 'issues' and github.event.action == 'opened' %}
+            📝 **[ORG WG] New Proposal Submitted**
+            Title: ${{ github.event.issue.title }}
+            Author: ${{ github.actor }}
+            Link: ${{ github.event.issue.html_url }}
+
+            {% elif github.event_name == 'issue_comment' %}
+            💬 **[ORG WG] Proposal Comment**
+            Proposal: ${{ github.event.issue.title }}
+            Comment by: ${{ github.actor }}
+            Comment: ${{ github.event.comment.body }}
+            Link: ${{ github.event.comment.html_url }}
+
+            {% elif github.event_name == 'pull_request' and github.event.action == 'closed' and github.event.pull_request.merged == true %}
+            ✅ **[ORG WG] Proposal Approved & Merged**
+            Title: ${{ github.event.pull_request.title }}
+            Merged by: ${{ github.actor }}
+            Link: ${{ github.event.pull_request.html_url }}
+
+            {% else %}
+            📢 **[ORG WG] Event:** ${{ github.event_name }} - ${{ github.event.action }}
+            Repo: ${{ github.repository }}
+            {% endif %}
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          DISCORD_USERNAME: "ORG WG GitHub Bot"
-          DISCORD_AVATAR: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-          DISCORD_CONTENT: |
-            🏛️ **Operations & Governance WG Update**
-            📂 Repo: ${{ github.repository }}
-            👤 By: ${{ github.actor }}
-            📌 Event: ${{ github.event_name }}
-
-            ${{ github.event.pull_request.title || github.event.issue.title || github.event.head_commit.message }}
-
-            🔗 [View on GitHub](${{ github.event.pull_request.html_url || github.event.issue.html_url || github.event.head_commit.url }})
