@@ -1,43 +1,94 @@
-name: ORG WG Notifications
+name: Notify Discord
 
 on:
   issues:
-    types: [opened, edited, closed]
+    types: [opened, closed]
   issue_comment:
     types: [created]
   pull_request:
     types: [opened, closed]
 
 jobs:
-  discord:
+  notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord notification
+      - name: Send Discord Notification
         uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            {% if github.event_name == 'issues' and github.event.action == 'opened' %}
-            📝 **[ORG WG] New Proposal Submitted**
-            Title: ${{ github.event.issue.title }}
-            Author: ${{ github.actor }}
-            Link: ${{ github.event.issue.html_url }}
-
-            {% elif github.event_name == 'issue_comment' %}
-            💬 **[ORG WG] Proposal Comment**
-            Proposal: ${{ github.event.issue.title }}
-            Comment by: ${{ github.actor }}
-            Comment: ${{ github.event.comment.body }}
-            Link: ${{ github.event.comment.html_url }}
-
-            {% elif github.event_name == 'pull_request' and github.event.action == 'closed' and github.event.pull_request.merged == true %}
-            ✅ **[ORG WG] Proposal Approved & Merged**
-            Title: ${{ github.event.pull_request.title }}
-            Merged by: ${{ github.actor }}
-            Link: ${{ github.event.pull_request.html_url }}
-
-            {% else %}
-            📢 **[ORG WG] Event:** ${{ github.event_name }} - ${{ github.event.action }}
-            Repo: ${{ github.repository }}
-            {% endif %}
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: |
+            {% set title = github.event.issue.title if github.event_name == 'issues' else github.event.pull_request.title %}
+            {% set url = github.event.issue.html_url if github.event_name == 'issues' else github.event.pull_request.html_url %}
+
+            {% if github.event_name == 'issues' and github.event.action == 'opened' %}
+              {% if title.startswith('[Proposal]') %}
+              📝 **New Proposal Submitted**
+              Title: {{ title }}
+              Author: {{ github.actor }}
+              Link: {{ url }}
+
+              {% elif title.startswith('[Report]') %}
+              📊 **New Report Submitted**
+              Title: {{ title }}
+              Submitted by: {{ github.actor }}
+              Link: {{ url }}
+
+              {% elif title.startswith('[Meeting]') %}
+              📅 **Meeting Notes Added**
+              Title: {{ title }}
+              Recorder: {{ github.actor }}
+              Link: {{ url }}
+
+              {% elif title.startswith('[Task]') %}
+              🛠️ **New Task / Bounty Created**
+              Title: {{ title }}
+              Created by: {{ github.actor }}
+              Link: {{ url }}
+
+              {% else %}
+              📢 **New Issue Created**
+              Title: {{ title }}
+              Author: {{ github.actor }}
+              Link: {{ url }}
+              {% endif %}
+
+            {% elif github.event_name == 'issues' and github.event.action == 'closed' %}
+              ✅ **Issue Closed**
+              Title: {{ title }}
+              Closed by: {{ github.actor }}
+              Link: {{ url }}
+
+            {% elif github.event_name == 'issue_comment' and github.event.action == 'created' %}
+              💬 **New Comment**
+              On: {{ github.event.issue.title }}
+              Comment by: {{ github.actor }}
+              "{{ github.event.comment.body }}"
+              Link: {{ github.event.comment.html_url }}
+
+            {% elif github.event_name == 'pull_request' and github.event.action == 'opened' %}
+              {% if title.startswith('[Workflow]') %}
+              ⚙️ **New Workflow Document Submitted**
+              Title: {{ title }}
+              Author: {{ github.actor }}
+              Link: {{ url }}
+
+              {% else %}
+              🔄 **New Pull Request**
+              Title: {{ title }}
+              Author: {{ github.actor }}
+              Link: {{ url }}
+              {% endif %}
+
+            {% elif github.event_name == 'pull_request' and github.event.action == 'closed' and github.event.pull_request.merged == true %}
+              🎉 **Pull Request Merged**
+              Title: {{ title }}
+              Merged by: {{ github.actor }}
+              Link: {{ url }}
+
+            {% elif github.event_name == 'pull_request' and github.event.action == 'closed' %}
+              ❌ **Pull Request Closed (Not Merged)**
+              Title: {{ title }}
+              Closed by: {{ github.actor }}
+              Link: {{ url }}
+            {% endif %}
