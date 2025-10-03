@@ -3,10 +3,10 @@ description: "Submit a structured weekly/monthly working group update"
 title: "[Report]: Working Group Name - Date Range"
 labels: ["report"]
 body: meeting context
-  - type: input
+  - type: [input]
     id: wg_name
     attributes:
-      label: "Working Group Name"
+      label: ["working group name]
       description: "e.g., Governance, Media & Storytelling, Community Activation"
       placeholder: "Enter WG name"
     validations:
