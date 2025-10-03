@@ -2,11 +2,11 @@ name: "Working Group Report"
 description: "Submit a structured weekly/monthly working group update"
 title: "[Report]: Working Group Name - Date Range"
 labels: ["report"]
-body: meeting context
-  - type: ["input"]
+body:
+  - type: input
     id: wg_name
     attributes:
-      label: ["working group name"]
+      label: "Working Group Name"
       description: "e.g., Governance, Media & Storytelling, Community Activation"
       placeholder: "Enter WG name"
     validations:
@@ -58,4 +58,28 @@ body: meeting context
       required: false
 
   - type: textarea
-    id: blocker
+    id: blockers
+    attributes:
+      label: "Blockers and Needs"
+      description: "List challenges, gaps, or requests for support from other WGs/community."
+      placeholder: "- Blocker → Support Needed"
+    validations:
+      required: false
+
+  - type: textarea
+    id: next_week
+    attributes:
+      label: "Next Week’s Focus"
+      description: "List top 2–3 priorities for the upcoming week."
+      placeholder: "- Planned Task → Responsible Person(s)"
+    validations:
+      required: false
+
+  - type: input
+    id: submission_date
+    attributes:
+      label: "Date of Submission"
+      description: "Date this report is submitted."
+      placeholder: "DD/MM/YYYY"
+    validations:
+      required: true
