@@ -1,54 +1,54 @@
-name: 📋 Meeting Notes
-description: Document meeting notes for a Working Group
+name: "📋 Meeting Notes"
+description: "Document meeting notes for a Working Group"
 title: "[Meeting]: "
 labels: ["meeting-notes"]
 body:
   - type: input
     id: title
     attributes:
-      label: Title
-      placeholder: Enter WG/Meeting Title
+      label: "Title"
+      placeholder: "Enter WG/Meeting Title"
     validations:
       required: true
 
   - type: input
     id: author
     attributes:
-      label: Author
-      placeholder: Note Taker’s Name
+      label: "Author"
+      placeholder: "Note Taker’s Name"
     validations:
       required: true
 
   - type: input
     id: date
     attributes:
-      label: Date
-      placeholder: DD/MM/YYYY
+      label: "Date"
+      placeholder: "DD/MM/YYYY"
     validations:
       required: true
 
   - type: input
     id: meeting_number
     attributes:
-      label: Meeting Number
-      placeholder: Update number
+      label: "Meeting Number"
+      placeholder: "Update number"
     validations:
       required: false
 
   - type: textarea
     id: attendees
     attributes:
-      label: Attendees
-      description: List all participants.
-      placeholder: Name 1, Name 2, Name 3...
+      label: "Attendees"
+      description: "List all participants."
+      placeholder: "Name 1, Name 2, Name 3..."
     validations:
       required: true
 
   - type: textarea
     id: agenda
     attributes:
-      label: Agenda
-      description: List agenda items discussed in the meeting.
+      label: "Agenda"
+      description: "List agenda items discussed in the meeting."
       placeholder: "- Agenda item 1\n- Agenda item 2"
     validations:
       required: true
@@ -56,14 +56,34 @@ body:
   - type: textarea
     id: discussion_notes
     attributes:
-      label: Discussion Notes
-      description: Summarize discussions, decisions, and key points for each agenda item.
-      placeholder: Key points and highlights...
+      label: "Discussion Notes"
+      description: "Summarize discussions, decisions, and key points for each agenda item."
+      placeholder: "Key points and highlights..."
     validations:
       required: true
 
   - type: textarea
     id: decisions
     attributes:
-      label: Decisions Made
-      descriptio
+      label: "Decisions Made"
+      description: "List decisions made during the meeting."
+      placeholder: "- Decision 1\n- Decision 2"
+    validations:
+      required: false
+
+  - type: textarea
+    id: action_items
+    attributes:
+      label: "Action Items"
+      description: "List tasks with responsible persons and deadlines."
+      placeholder: "- [Task] – [Responsible Person] – [Deadline]"
+    validations:
+      required: false
+
+  - type: input
+    id: next_meeting
+    attributes:
+      label: "Next Meeting (if applicable)"
+      placeholder: "Date & tentative agenda"
+    validations:
+      required: false
