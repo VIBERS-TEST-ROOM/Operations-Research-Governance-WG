@@ -30,7 +30,7 @@ jobs:
 
               {% elif title.startswith('[Report]') %}
               📊 **New Report Submitted**
-              Title: {{ title }}
+              {{ title | default("No Title") }}
               Submitted by: {{ github.actor }}
               Link: {{ url }}
 
