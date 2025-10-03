@@ -24,7 +24,7 @@ jobs:
             {% if github.event_name == 'issues' and github.event.action == 'opened' %}
               {% if title.startswith('[Proposal]') %}
               📝 **New Proposal Submitted**
-              Title: {{ title }}
+              {{ title | default("No Title") }}
               Author: {{ github.actor }}
               Link: {{ url }}
 
