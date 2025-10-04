@@ -18,77 +18,86 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
-            {% set title = github.event.issue.title if github.event_name == 'issues' else github.event.pull_request.title %}
-            {% set url = github.event.issue.html_url if github.event_name == 'issues' else github.event.pull_request.html_url %}
+            {% if github.event_name == 'issues' %}
+              {% set title = github.event.issue.title %}
+              {% set url = github.event.issue.html_url %}
 
-            {% if github.event_name == 'issues' and github.event.action == 'opened' %}
-              {% if title.startswith('[Proposal]') %}
-              📝 **New Proposal Submitted**
-              {{ title | default("No Title") }}
-              Author: {{ github.actor }}
-              Link: {{ url }}
+              {% if github.event.action == 'opened' %}
+                {% if title.startswith('[Proposal]') %}
+📝 **New Proposal Submitted**
+Title: {{ title }}
+Author: {{ github.actor }}
+Link: {{ url }}
 
-              {% elif title.startswith('[Report]') %}
-              📊 **New Report Submitted**
-              {{ title | default("No Title") }}
-              Submitted by: {{ github.actor }}
-              Link: {{ url }}
+                {% elif title.startswith('[Report]') %}
+📊 **New Report Submitted**
+Title: {{ title }}
+Submitted by: {{ github.actor }}
+Link: {{ url }}
 
-              {% elif title.startswith('[Meeting]') %}
-              📅 **Meeting Notes Added**
-              Title: {{ title }}
-              Recorder: {{ github.actor }}
-              Link: {{ url }}
+                {% elif title.startswith('[Meeting]') %}
+📅 **Meeting Notes Added**
+Title: {{ title }}
+Recorder: {{ github.actor }}
+Link: {{ url }}
 
-              {% elif title.startswith('[Task]') %}
-              🛠️ **New Task / Bounty Created**
-              Title: {{ title }}
-              Created by: {{ github.actor }}
-              Link: {{ url }}
+                {% elif title.startswith('[Task]') %}
+🛠️ **New Task / Bounty Created**
+Title: {{ title }}
+Created by: {{ github.actor }}
+Link: {{ url }}
 
-              {% else %}
-              📢 **New Issue Created**
-              Title: {{ title }}
-              Author: {{ github.actor }}
-              Link: {{ url }}
+                {% else %}
+📢 **New Issue Created**
+Title: {{ title }}
+Author: {{ github.actor }}
+Link: {{ url }}
+                {% endif %}
+
+              {% elif github.event.action == 'closed' %}
+✅ **Issue Closed**
+Title: {{ title }}
+Closed by: {{ github.actor }}
+Link: {{ url }}
               {% endif %}
+            {% endif %}
 
-            {% elif github.event_name == 'issues' and github.event.action == 'closed' %}
-              ✅ **Issue Closed**
-              Title: {{ title }}
-              Closed by: {{ github.actor }}
-              Link: {{ url }}
+            {% if github.event_name == 'issue_comment' %}
+💬 **New Comment**
+On: {{ github.event.issue.title }}
+Comment by: {{ github.actor }}
+"{{ github.event.comment.body }}"
+Link: {{ github.event.comment.html_url }}
+            {% endif %}
 
-            {% elif github.event_name == 'issue_comment' and github.event.action == 'created' %}
-              💬 **New Comment**
-              On: {{ github.event.issue.title }}
-              Comment by: {{ github.actor }}
-              "{{ github.event.comment.body }}"
-              Link: {{ github.event.comment.html_url }}
+            {% if github.event_name == 'pull_request' %}
+              {% set title = github.event.pull_request.title %}
+              {% set url = github.event.pull_request.html_url %}
 
-            {% elif github.event_name == 'pull_request' and github.event.action == 'opened' %}
-              {% if title.startswith('[Workflow]') %}
-              ⚙️ **New Workflow Document Submitted**
-              Title: {{ title }}
-              Author: {{ github.actor }}
-              Link: {{ url }}
+              {% if github.event.action == 'opened' %}
+                {% if title.startswith('[Workflow]') %}
+⚙️ **New Workflow Document Submitted**
+Title: {{ title }}
+Author: {{ github.actor }}
+Link: {{ url }}
 
-              {% else %}
-              🔄 **New Pull Request**
-              Title: {{ title }}
-              Author: {{ github.actor }}
-              Link: {{ url }}
+                {% else %}
+🔄 **New Pull Request**
+Title: {{ title }}
+Author: {{ github.actor }}
+Link: {{ url }}
+                {% endif %}
+
+              {% elif github.event.action == 'closed' and github.event.pull_request.merged %}
+🎉 **Pull Request Merged**
+Title: {{ title }}
+Merged by: {{ github.actor }}
+Link: {{ url }}
+
+              {% elif github.event.action == 'closed' %}
+❌ **Pull Request Closed (Not Merged)**
+Title: {{ title }}
+Closed by: {{ github.actor }}
+Link: {{ url }}
               {% endif %}
-
-            {% elif github.event_name == 'pull_request' and github.event.action == 'closed' and github.event.pull_request.merged == true %}
-              🎉 **Pull Request Merged**
-              Title: {{ title }}
-              Merged by: {{ github.actor }}
-              Link: {{ url }}
-
-            {% elif github.event_name == 'pull_request' and github.event.action == 'closed' %}
-              ❌ **Pull Request Closed (Not Merged)**
-              Title: {{ title }}
-              Closed by: {{ github.actor }}
-              Link: {{ url }}
             {% endif %}
