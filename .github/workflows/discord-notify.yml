@@ -1,71 +1,56 @@
-<% if (github.event_name == 'issues' && github.event.action == 'opened') { %>
-  <% if (github.event.issue.title.startsWith('[Proposal]')) { %>
-  📝 **New Proposal Submitted**
-  Title: <%= github.event.issue.title %>
-  Author: <%= github.actor %>
-  Link: <%= github.event.issue.html_url %>
+name: Notify Discord
 
-  <% } else if (github.event.issue.title.startsWith('[Report]')) { %>
-  📊 **New Report Submitted**
-  Title: <%= github.event.issue.title %>
-  Submitted by: <%= github.actor %>
-  Link: <%= github.event.issue.html_url %>
+on:
+  issues:
+    types: [opened, closed]
+  issue_comment:
+    types: [created]
+  pull_request:
+    types: [opened, closed]
 
-  <% } else if (github.event.issue.title.startsWith('[Meeting]')) { %>
-  📅 **Meeting Notes Added**
-  Title: <%= github.event.issue.title %>
-  Recorder: <%= github.actor %>
-  Link: <%= github.event.issue.html_url %>
-
-  <% } else if (github.event.issue.title.startsWith('[Task]')) { %>
-  🛠️ **New Task / Bounty Created**
-  Title: <%= github.event.issue.title %>
-  Created by: <%= github.actor %>
-  Link: <%= github.event.issue.html_url %>
-
-  <% } else { %>
-  📢 **New Issue Created**
-  Title: <%= github.event.issue.title %>
-  Author: <%= github.actor %>
-  Link: <%= github.event.issue.html_url %>
-  <% } %>
-
-<% } else if (github.event_name == 'issues' && github.event.action == 'closed') { %>
-  ✅ **Issue Closed**
-  Title: <%= github.event.issue.title %>
-  Closed by: <%= github.actor %>
-  Link: <%= github.event.issue.html_url %>
-
-<% } else if (github.event_name == 'issue_comment' && github.event.action == 'created') { %>
-  💬 **New Comment**
-  On: <%= github.event.issue.title %>
-  Comment by: <%= github.actor %>
-  "<%= github.event.comment.body %>"
-  Link: <%= github.event.comment.html_url %>
-
-<% } else if (github.event_name == 'pull_request' && github.event.action == 'opened') { %>
-  <% if (github.event.pull_request.title.startsWith('[Workflow]')) { %>
-  ⚙️ **New Workflow Document Submitted**
-  Title: <%= github.event.pull_request.title %>
-  Author: <%= github.actor %>
-  Link: <%= github.event.pull_request.html_url %>
-
-  <% } else { %>
-  🔄 **New Pull Request**
-  Title: <%= github.event.pull_request.title %>
-  Author: <%= github.actor %>
-  Link: <%= github.event.pull_request.html_url %>
-  <% } %>
-
-<% } else if (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged) { %>
-  🎉 **Pull Request Merged**
-  Title: <%= github.event.pull_request.title %>
-  Merged by: <%= github.actor %>
-  Link: <%= github.event.pull_request.html_url %>
-
-<% } else if (github.event_name == 'pull_request' && github.event.action == 'closed') { %>
-  ❌ **Pull Request Closed (Not Merged)**
-  Title: <%= github.event.pull_request.title %>
-  Closed by: <%= github.actor %>
-  Link: <%= github.event.pull_request.html_url %>
-<% } %>
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: |
+            <% if (github.event_name == "issues") { %>
+              <% if (github.event.action == "opened") { %>
+              📝 **New Issue Created**
+              Title: <%= github.event.issue.title %>
+              Author: <%= github.actor %>
+              Link: <%= github.event.issue.html_url %>
+              <% } else if (github.event.action == "closed") { %>
+              ✅ **Issue Closed**
+              Title: <%= github.event.issue.title %>
+              Closed by: <%= github.actor %>
+              Link: <%= github.event.issue.html_url %>
+              <% } %>
+            <% } else if (github.event_name == "issue_comment") { %>
+              💬 **New Comment**
+              On: <%= github.event.issue.title %>
+              Comment by: <%= github.actor %>
+              "<%= github.event.comment.body %>"
+              Link: <%= github.event.comment.html_url %>
+            <% } else if (github.event_name == "pull_request") { %>
+              <% if (github.event.action == "opened") { %>
+              🔄 **New Pull Request**
+              Title: <%= github.event.pull_request.title %>
+              Author: <%= github.actor %>
+              Link: <%= github.event.pull_request.html_url %>
+              <% } else if (github.event.action == "closed" && github.event.pull_request.merged) { %>
+              🎉 **Pull Request Merged**
+              Title: <%= github.event.pull_request.title %>
+              Merged by: <%= github.actor %>
+              Link: <%= github.event.pull_request.html_url %>
+              <% } else if (github.event.action == "closed") { %>
+              ❌ **Pull Request Closed (Not Merged)**
+              Title: <%= github.event.pull_request.title %>
+              Closed by: <%= github.actor %>
+              Link: <%= github.event.pull_request.html_url %>
+              <% } %>
+            <% } %>
