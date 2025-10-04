@@ -1,127 +1,71 @@
-name: Notify Discord
+<% if (github.event_name == 'issues' && github.event.action == 'opened') { %>
+  <% if (github.event.issue.title.startsWith('[Proposal]')) { %>
+  📝 **New Proposal Submitted**
+  Title: <%= github.event.issue.title %>
+  Author: <%= github.actor %>
+  Link: <%= github.event.issue.html_url %>
 
-on:
-  issues:
-    types: [opened, closed]
-  issue_comment:
-    types: [created]
-  pull_request:
-    types: [opened, closed]
+  <% } else if (github.event.issue.title.startsWith('[Report]')) { %>
+  📊 **New Report Submitted**
+  Title: <%= github.event.issue.title %>
+  Submitted by: <%= github.actor %>
+  Link: <%= github.event.issue.html_url %>
 
-jobs:
-  notify:
-    runs-on: ubuntu-latest
-    env:
-      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+  <% } else if (github.event.issue.title.startsWith('[Meeting]')) { %>
+  📅 **Meeting Notes Added**
+  Title: <%= github.event.issue.title %>
+  Recorder: <%= github.actor %>
+  Link: <%= github.event.issue.html_url %>
 
-    steps:
-      - name: Proposal Issue Opened
-        if: github.event_name == 'issues' && github.event.action == 'opened' && startsWith(github.event.issue.title, '[Proposal]')
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            📝 **New Proposal Submitted**
-            Title: ${{ github.event.issue.title }}
-            Author: ${{ github.event.issue.user.login }}
-            Link: ${{ github.event.issue.html_url }}
+  <% } else if (github.event.issue.title.startsWith('[Task]')) { %>
+  🛠️ **New Task / Bounty Created**
+  Title: <%= github.event.issue.title %>
+  Created by: <%= github.actor %>
+  Link: <%= github.event.issue.html_url %>
 
-      - name: Report Issue Opened
-        if: github.event_name == 'issues' && github.event.action == 'opened' && startsWith(github.event.issue.title, '[Report]')
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            📊 **New Report Submitted**
-            Title: ${{ github.event.issue.title }}
-            Submitted by: ${{ github.event.issue.user.login }}
-            Link: ${{ github.event.issue.html_url }}
+  <% } else { %>
+  📢 **New Issue Created**
+  Title: <%= github.event.issue.title %>
+  Author: <%= github.actor %>
+  Link: <%= github.event.issue.html_url %>
+  <% } %>
 
-      - name: Meeting Notes Opened
-        if: github.event_name == 'issues' && github.event.action == 'opened' && startsWith(github.event.issue.title, '[Meeting]')
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            📅 **Meeting Notes Added**
-            Title: ${{ github.event.issue.title }}
-            Recorder: ${{ github.event.issue.user.login }}
-            Link: ${{ github.event.issue.html_url }}
+<% } else if (github.event_name == 'issues' && github.event.action == 'closed') { %>
+  ✅ **Issue Closed**
+  Title: <%= github.event.issue.title %>
+  Closed by: <%= github.actor %>
+  Link: <%= github.event.issue.html_url %>
 
-      - name: Task Issue Opened
-        if: github.event_name == 'issues' && github.event.action == 'opened' && startsWith(github.event.issue.title, '[Task]')
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            🛠️ **New Task / Bounty Created**
-            Title: ${{ github.event.issue.title }}
-            Created by: ${{ github.event.issue.user.login }}
-            Link: ${{ github.event.issue.html_url }}
+<% } else if (github.event_name == 'issue_comment' && github.event.action == 'created') { %>
+  💬 **New Comment**
+  On: <%= github.event.issue.title %>
+  Comment by: <%= github.actor %>
+  "<%= github.event.comment.body %>"
+  Link: <%= github.event.comment.html_url %>
 
-      - name: Generic Issue Opened
-        if: github.event_name == 'issues' && github.event.action == 'opened' && !startsWith(github.event.issue.title, '[Proposal]') && !startsWith(github.event.issue.title, '[Report]') && !startsWith(github.event.issue.title, '[Meeting]') && !startsWith(github.event.issue.title, '[Task]')
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            📢 **New Issue Created**
-            Title: ${{ github.event.issue.title }}
-            Author: ${{ github.event.issue.user.login }}
-            Link: ${{ github.event.issue.html_url }}
+<% } else if (github.event_name == 'pull_request' && github.event.action == 'opened') { %>
+  <% if (github.event.pull_request.title.startsWith('[Workflow]')) { %>
+  ⚙️ **New Workflow Document Submitted**
+  Title: <%= github.event.pull_request.title %>
+  Author: <%= github.actor %>
+  Link: <%= github.event.pull_request.html_url %>
 
-      - name: Issue Closed
-        if: github.event_name == 'issues' && github.event.action == 'closed'
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            ✅ **Issue Closed**
-            Title: ${{ github.event.issue.title }}
-            Closed by: ${{ github.actor }}
-            Link: ${{ github.event.issue.html_url }}
+  <% } else { %>
+  🔄 **New Pull Request**
+  Title: <%= github.event.pull_request.title %>
+  Author: <%= github.actor %>
+  Link: <%= github.event.pull_request.html_url %>
+  <% } %>
 
-      - name: Issue Comment Created
-        if: github.event_name == 'issue_comment' && github.event.action == 'created'
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            💬 **New Comment**
-            On: ${{ github.event.issue.title }}
-            Comment by: ${{ github.event.comment.user.login }}
-            "{{ github.event.comment.body }}"
-            Link: ${{ github.event.comment.html_url }}
+<% } else if (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged) { %>
+  🎉 **Pull Request Merged**
+  Title: <%= github.event.pull_request.title %>
+  Merged by: <%= github.actor %>
+  Link: <%= github.event.pull_request.html_url %>
 
-      - name: Workflow PR Opened
-        if: github.event_name == 'pull_request' && github.event.action == 'opened' && startsWith(github.event.pull_request.title, '[Workflow]')
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            ⚙️ **New Workflow Document Submitted**
-            Title: ${{ github.event.pull_request.title }}
-            Author: ${{ github.event.pull_request.user.login }}
-            Link: ${{ github.event.pull_request.html_url }}
-
-      - name: Generic PR Opened
-        if: github.event_name == 'pull_request' && github.event.action == 'opened' && !startsWith(github.event.pull_request.title, '[Workflow]')
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            🔄 **New Pull Request**
-            Title: ${{ github.event.pull_request.title }}
-            Author: ${{ github.event.pull_request.user.login }}
-            Link: ${{ github.event.pull_request.html_url }}
-
-      - name: PR Merged
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            🎉 **Pull Request Merged**
-            Title: ${{ github.event.pull_request.title }}
-            Merged by: ${{ github.actor }}
-            Link: ${{ github.event.pull_request.html_url }}
-
-      - name: PR Closed (Not Merged)
-        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged != true
-        uses: Ilshidur/action-discord@master
-        with:
-          args: |
-            ❌ **Pull Request Closed (Not Merged)**
-            Title: ${{ github.event.pull_request.title }}
-            Closed by: ${{ github.actor }}
-            Link: ${{ github.event.pull_request.html_url }}
+<% } else if (github.event_name == 'pull_request' && github.event.action == 'closed') { %>
+  ❌ **Pull Request Closed (Not Merged)**
+  Title: <%= github.event.pull_request.title %>
+  Closed by: <%= github.actor %>
+  Link: <%= github.event.pull_request.html_url %>
+<% } %>
