@@ -11,17 +11,12 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    # Provide the webhook once at job level (inherited by steps)
     env:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
     steps:
-      # 1) New Proposal (issue title starts with [Proposal])
       - name: Notify — New Proposal
-        if: >
-          github.event_name == 'issues' &&
-          github.event.action == 'opened' &&
-          startsWith(github.event.issue.title, '[Proposal]')
+        if: github.event_name == 'issues' && github.event.action == 'opened' && startsWith(github.event.issue.title, '[Proposal]')
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -30,12 +25,8 @@ jobs:
             Author: ${{ github.event.issue.user.login }}
             Link: ${{ github.event.issue.html_url }}
 
-      # 2) New Report
       - name: Notify — New Report
-        if: >
-          github.event_name == 'issues' &&
-          github.event.action == 'opened' &&
-          startsWith(github.event.issue.title, '[Report]')
+        if: github.event_name == 'issues' && github.event.action == 'opened' && startsWith(github.event.issue.title, '[Report]')
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -44,12 +35,8 @@ jobs:
             Submitted by: ${{ github.event.issue.user.login }}
             Link: ${{ github.event.issue.html_url }}
 
-      # 3) Meeting Notes
       - name: Notify — Meeting Notes
-        if: >
-          github.event_name == 'issues' &&
-          github.event.action == 'opened' &&
-          startsWith(github.event.issue.title, '[Meeting]')
+        if: github.event_name == 'issues' && github.event.action == 'opened' && startsWith(github.event.issue.title, '[Meeting]')
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -58,12 +45,8 @@ jobs:
             Recorder: ${{ github.event.issue.user.login }}
             Link: ${{ github.event.issue.html_url }}
 
-      # 4) New Task / Bounty
       - name: Notify — New Task/Bounty
-        if: >
-          github.event_name == 'issues' &&
-          github.event.action == 'opened' &&
-          startsWith(github.event.issue.title, '[Task]')
+        if: github.event_name == 'issues' && github.event.action == 'opened' && startsWith(github.event.issue.title, '[Task]')
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -72,15 +55,8 @@ jobs:
             Created by: ${{ github.event.issue.user.login }}
             Link: ${{ github.event.issue.html_url }}
 
-      # 5) Generic new issue (fallback) — only if not one of the above
       - name: Notify — New Issue (fallback)
-        if: >
-          github.event_name == 'issues' &&
-          github.event.action == 'opened' &&
-          !startsWith(github.event.issue.title, '[Proposal]') &&
-          !startsWith(github.event.issue.title, '[Report]') &&
-          !startsWith(github.event.issue.title, '[Meeting]') &&
-          !startsWith(github.event.issue.title, '[Task]')
+        if: github.event_name == 'issues' && github.event.action == 'opened' && !startsWith(github.event.issue.title, '[Proposal]') && !startsWith(github.event.issue.title, '[Report]') && !startsWith(github.event.issue.title, '[Meeting]') && !startsWith(github.event.issue.title, '[Task]')
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -89,11 +65,8 @@ jobs:
             Author: ${{ github.event.issue.user.login }}
             Link: ${{ github.event.issue.html_url }}
 
-      # 6) Issue closed
       - name: Notify — Issue Closed
-        if: >
-          github.event_name == 'issues' &&
-          github.event.action == 'closed'
+        if: github.event_name == 'issues' && github.event.action == 'closed'
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -102,11 +75,8 @@ jobs:
             Closed by: ${{ github.actor }}
             Link: ${{ github.event.issue.html_url }}
 
-      # 7) New comment on issue
       - name: Notify — Issue Comment
-        if: >
-          github.event_name == 'issue_comment' &&
-          github.event.action == 'created'
+        if: github.event_name == 'issue_comment' && github.event.action == 'created'
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -116,12 +86,8 @@ jobs:
             "{{ github.event.comment.body }}"
             Link: ${{ github.event.comment.html_url }}
 
-      # 8) New workflow doc PR (title starts with [Workflow])
       - name: Notify — New Workflow PR
-        if: >
-          github.event_name == 'pull_request' &&
-          github.event.action == 'opened' &&
-          startsWith(github.event.pull_request.title, '[Workflow]')
+        if: github.event_name == 'pull_request' && github.event.action == 'opened' && startsWith(github.event.pull_request.title, '[Workflow]')
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -130,12 +96,8 @@ jobs:
             Author: ${{ github.event.pull_request.user.login }}
             Link: ${{ github.event.pull_request.html_url }}
 
-      # 9) Generic new PR
-      - name: Notify — New Pull Request
-        if: >
-          github.event_name == 'pull_request' &&
-          github.event.action == 'opened' &&
-          !startsWith(github.event.pull_request.title, '[Workflow]')
+      - name: Notify — New PR
+        if: github.event_name == 'pull_request' && github.event.action == 'opened' && !startsWith(github.event.pull_request.title, '[Workflow]')
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -144,12 +106,8 @@ jobs:
             Author: ${{ github.event.pull_request.user.login }}
             Link: ${{ github.event.pull_request.html_url }}
 
-      # 10) PR merged
       - name: Notify — PR Merged
-        if: >
-          github.event_name == 'pull_request' &&
-          github.event.action == 'closed' &&
-          github.event.pull_request.merged == true
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
         uses: Ilshidur/action-discord@master
         with:
           args: |
@@ -158,12 +116,8 @@ jobs:
             Merged by: ${{ github.actor }}
             Link: ${{ github.event.pull_request.html_url }}
 
-      # 11) PR closed (not merged)
-      - name: Notify — PR Closed (Not Merged)
-        if: >
-          github.event_name == 'pull_request' &&
-          github.event.action == 'closed' &&
-          github.event.pull_request.merged != true
+      - name: Notify — PR Closed (not merged)
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged != true
         uses: Ilshidur/action-discord@master
         with:
           args: |
