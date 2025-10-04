@@ -16,41 +16,13 @@ jobs:
         uses: Ilshidur/action-discord@master
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        with:
-          args: |
-            <% if (github.event_name == "issues") { %>
-              <% if (github.event.action == "opened") { %>
-              📝 **New Issue Created**
-              Title: <%= github.event.issue.title %>
-              Author: <%= github.actor %>
-              Link: <%= github.event.issue.html_url %>
-              <% } else if (github.event.action == "closed") { %>
-              ✅ **Issue Closed**
-              Title: <%= github.event.issue.title %>
-              Closed by: <%= github.actor %>
-              Link: <%= github.event.issue.html_url %>
-              <% } %>
-            <% } else if (github.event_name == "issue_comment") { %>
-              💬 **New Comment**
-              On: <%= github.event.issue.title %>
-              Comment by: <%= github.actor %>
-              "<%= github.event.comment.body %>"
-              Link: <%= github.event.comment.html_url %>
-            <% } else if (github.event_name == "pull_request") { %>
-              <% if (github.event.action == "opened") { %>
-              🔄 **New Pull Request**
-              Title: <%= github.event.pull_request.title %>
-              Author: <%= github.actor %>
-              Link: <%= github.event.pull_request.html_url %>
-              <% } else if (github.event.action == "closed" && github.event.pull_request.merged) { %>
-              🎉 **Pull Request Merged**
-              Title: <%= github.event.pull_request.title %>
-              Merged by: <%= github.actor %>
-              Link: <%= github.event.pull_request.html_url %>
-              <% } else if (github.event.action == "closed") { %>
-              ❌ **Pull Request Closed (Not Merged)**
-              Title: <%= github.event.pull_request.title %>
-              Closed by: <%= github.actor %>
-              Link: <%= github.event.pull_request.html_url %>
-              <% } %>
-            <% } %>
+          DISCORD_USERNAME: ORG WG GitHub Bot
+          DISCORD_AVATAR: https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
+          DISCORD_CONTENT: |
+            🏛️ **Operations & Governance WG Update**
+            📂 Repo: ${{ github.repository }}
+            👤 By: ${{ github.actor }}
+            📌 Event: ${{ github.event_name }}
+
+            ${{ github.event.issue.title || github.event.pull_request.title || 'No title' }}
+            🔗 [View on GitHub](${{ github.event.issue.html_url || github.event.pull_request.html_url || github.event.comment.html_url || github.event.head_commit.url }})
