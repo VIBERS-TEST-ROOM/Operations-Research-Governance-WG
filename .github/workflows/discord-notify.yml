@@ -11,93 +11,163 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    # Provide the webhook once at job level (inherited by steps)
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
     steps:
-      - name: Send Discord Notification
+      # 1) New Proposal (issue title starts with [Proposal])
+      - name: Notify — New Proposal
+        if: >
+          github.event_name == 'issues' &&
+          github.event.action == 'opened' &&
+          startsWith(github.event.issue.title, '[Proposal]')
         uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
-            {% if github.event_name == 'issues' %}
-              {% set title = github.event.issue.title %}
-              {% set url = github.event.issue.html_url %}
+            📝 **New Proposal Submitted**
+            Title: ${{ github.event.issue.title }}
+            Author: ${{ github.event.issue.user.login }}
+            Link: ${{ github.event.issue.html_url }}
 
-              {% if github.event.action == 'opened' %}
-                {% if title.startswith('[Proposal]') %}
-📝 **New Proposal Submitted**
-Title: {{ title }}
-Author: {{ github.actor }}
-Link: {{ url }}
+      # 2) New Report
+      - name: Notify — New Report
+        if: >
+          github.event_name == 'issues' &&
+          github.event.action == 'opened' &&
+          startsWith(github.event.issue.title, '[Report]')
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            📊 **New Report Submitted**
+            Title: ${{ github.event.issue.title }}
+            Submitted by: ${{ github.event.issue.user.login }}
+            Link: ${{ github.event.issue.html_url }}
 
-                {% elif title.startswith('[Report]') %}
-📊 **New Report Submitted**
-Title: {{ title }}
-Submitted by: {{ github.actor }}
-Link: {{ url }}
+      # 3) Meeting Notes
+      - name: Notify — Meeting Notes
+        if: >
+          github.event_name == 'issues' &&
+          github.event.action == 'opened' &&
+          startsWith(github.event.issue.title, '[Meeting]')
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            📅 **Meeting Notes Added**
+            Title: ${{ github.event.issue.title }}
+            Recorder: ${{ github.event.issue.user.login }}
+            Link: ${{ github.event.issue.html_url }}
 
-                {% elif title.startswith('[Meeting]') %}
-📅 **Meeting Notes Added**
-Title: {{ title }}
-Recorder: {{ github.actor }}
-Link: {{ url }}
+      # 4) New Task / Bounty
+      - name: Notify — New Task/Bounty
+        if: >
+          github.event_name == 'issues' &&
+          github.event.action == 'opened' &&
+          startsWith(github.event.issue.title, '[Task]')
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🛠️ **New Task / Bounty Created**
+            Title: ${{ github.event.issue.title }}
+            Created by: ${{ github.event.issue.user.login }}
+            Link: ${{ github.event.issue.html_url }}
 
-                {% elif title.startswith('[Task]') %}
-🛠️ **New Task / Bounty Created**
-Title: {{ title }}
-Created by: {{ github.actor }}
-Link: {{ url }}
+      # 5) Generic new issue (fallback) — only if not one of the above
+      - name: Notify — New Issue (fallback)
+        if: >
+          github.event_name == 'issues' &&
+          github.event.action == 'opened' &&
+          !startsWith(github.event.issue.title, '[Proposal]') &&
+          !startsWith(github.event.issue.title, '[Report]') &&
+          !startsWith(github.event.issue.title, '[Meeting]') &&
+          !startsWith(github.event.issue.title, '[Task]')
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            📢 **New Issue Created**
+            Title: ${{ github.event.issue.title }}
+            Author: ${{ github.event.issue.user.login }}
+            Link: ${{ github.event.issue.html_url }}
 
-                {% else %}
-📢 **New Issue Created**
-Title: {{ title }}
-Author: {{ github.actor }}
-Link: {{ url }}
-                {% endif %}
+      # 6) Issue closed
+      - name: Notify — Issue Closed
+        if: >
+          github.event_name == 'issues' &&
+          github.event.action == 'closed'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            ✅ **Issue Closed**
+            Title: ${{ github.event.issue.title }}
+            Closed by: ${{ github.actor }}
+            Link: ${{ github.event.issue.html_url }}
 
-              {% elif github.event.action == 'closed' %}
-✅ **Issue Closed**
-Title: {{ title }}
-Closed by: {{ github.actor }}
-Link: {{ url }}
-              {% endif %}
-            {% endif %}
+      # 7) New comment on issue
+      - name: Notify — Issue Comment
+        if: >
+          github.event_name == 'issue_comment' &&
+          github.event.action == 'created'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            💬 **New Comment**
+            On: ${{ github.event.issue.title }}
+            Comment by: ${{ github.event.comment.user.login }}
+            "{{ github.event.comment.body }}"
+            Link: ${{ github.event.comment.html_url }}
 
-            {% if github.event_name == 'issue_comment' %}
-💬 **New Comment**
-On: {{ github.event.issue.title }}
-Comment by: {{ github.actor }}
-"{{ github.event.comment.body }}"
-Link: {{ github.event.comment.html_url }}
-            {% endif %}
+      # 8) New workflow doc PR (title starts with [Workflow])
+      - name: Notify — New Workflow PR
+        if: >
+          github.event_name == 'pull_request' &&
+          github.event.action == 'opened' &&
+          startsWith(github.event.pull_request.title, '[Workflow]')
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            ⚙️ **New Workflow Document Submitted**
+            Title: ${{ github.event.pull_request.title }}
+            Author: ${{ github.event.pull_request.user.login }}
+            Link: ${{ github.event.pull_request.html_url }}
 
-            {% if github.event_name == 'pull_request' %}
-              {% set title = github.event.pull_request.title %}
-              {% set url = github.event.pull_request.html_url %}
+      # 9) Generic new PR
+      - name: Notify — New Pull Request
+        if: >
+          github.event_name == 'pull_request' &&
+          github.event.action == 'opened' &&
+          !startsWith(github.event.pull_request.title, '[Workflow]')
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🔄 **New Pull Request**
+            Title: ${{ github.event.pull_request.title }}
+            Author: ${{ github.event.pull_request.user.login }}
+            Link: ${{ github.event.pull_request.html_url }}
 
-              {% if github.event.action == 'opened' %}
-                {% if title.startswith('[Workflow]') %}
-⚙️ **New Workflow Document Submitted**
-Title: {{ title }}
-Author: {{ github.actor }}
-Link: {{ url }}
+      # 10) PR merged
+      - name: Notify — PR Merged
+        if: >
+          github.event_name == 'pull_request' &&
+          github.event.action == 'closed' &&
+          github.event.pull_request.merged == true
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🎉 **Pull Request Merged**
+            Title: ${{ github.event.pull_request.title }}
+            Merged by: ${{ github.actor }}
+            Link: ${{ github.event.pull_request.html_url }}
 
-                {% else %}
-🔄 **New Pull Request**
-Title: {{ title }}
-Author: {{ github.actor }}
-Link: {{ url }}
-                {% endif %}
-
-              {% elif github.event.action == 'closed' and github.event.pull_request.merged %}
-🎉 **Pull Request Merged**
-Title: {{ title }}
-Merged by: {{ github.actor }}
-Link: {{ url }}
-
-              {% elif github.event.action == 'closed' %}
-❌ **Pull Request Closed (Not Merged)**
-Title: {{ title }}
-Closed by: {{ github.actor }}
-Link: {{ url }}
-              {% endif %}
-            {% endif %}
+      # 11) PR closed (not merged)
+      - name: Notify — PR Closed (Not Merged)
+        if: >
+          github.event_name == 'pull_request' &&
+          github.event.action == 'closed' &&
+          github.event.pull_request.merged != true
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            ❌ **Pull Request Closed (Not Merged)**
+            Title: ${{ github.event.pull_request.title }}
+            Closed by: ${{ github.actor }}
+            Link: ${{ github.event.pull_request.html_url }}
